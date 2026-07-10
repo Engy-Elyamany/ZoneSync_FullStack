@@ -3,75 +3,166 @@
 @inject SignInManager<ApplicationUser> SignInManager
 @{
     ViewData["Title"] = "Home";
+    // Signed-out visitors get the plain marketing landing page (no sidebar).
+    // Once signed in, Home renders inside the real app shell.
+    Layout = SignInManager.IsSignedIn(User) ? "_Layout" : "_PublicLayout";
 }
 
-<div class="text-center py-5">
-    <h1 class="display-4">Welcome to ZoneSync</h1>
-    <p class="lead text-muted">Smart Farm Management System</p>
-    <hr class="my-4" />
-    <p>Manage your farms, zones, crops, sensors, alerts, and tasks all in one place.</p>
+<div class="space-y-8">
+    <section class="overflow-hidden rounded-[2rem] border border-slate-200/80 bg-gradient-to-br from-brand-600 via-emerald-600 to-slate-900 p-8 text-white shadow-soft sm:p-10 lg:p-12">
+        <div class="grid gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
+            <div class="space-y-5">
+                <div class="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-sm font-medium backdrop-blur">
+                    <i data-lucide="sprout" class="h-4 w-4"></i>
+                    Smarter farm coordination
+                </div>
+                <div class="space-y-3">
+                    <h1 class="text-4xl font-semibold tracking-tight sm:text-5xl">Run every field operation from one calm control center.</h1>
+                    <p class="max-w-2xl text-lg text-emerald-50/90">Track farms, zones, crops, sensors, alerts, and tasks in one elegant workspace built for modern agricultural teams.</p>
+                </div>
+                <div class="flex flex-wrap gap-3">
+                    <a asp-controller="Account" asp-action="RegisterOwner" class="inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 font-semibold text-slate-900 transition hover:-translate-y-0.5">Get started</a>
+                    <a asp-controller="Account" asp-action="Login" class="inline-flex items-center gap-2 rounded-full border border-white/30 px-5 py-3 font-semibold text-white transition hover:bg-white/10">Explore workspace</a>
+                </div>
+            </div>
+            <div class="rounded-[1.5rem] border border-white/15 bg-white/10 p-6 backdrop-blur">
+                <div class="grid gap-4 sm:grid-cols-2">
+                    <div class="rounded-2xl border border-white/10 bg-slate-950/20 p-4">
+                        <p class="text-sm text-emerald-100">Live oversight</p>
+                        <p class="mt-2 text-3xl font-semibold">24/7</p>
+                    </div>
+                    <div class="rounded-2xl border border-white/10 bg-slate-950/20 p-4">
+                        <p class="text-sm text-emerald-100">Fast response</p>
+                        <p class="mt-2 text-3xl font-semibold">Instant</p>
+                    </div>
+                    <div class="rounded-2xl border border-white/10 bg-slate-950/20 p-4 sm:col-span-2">
+                        <p class="text-sm text-emerald-100">Operational focus</p>
+                        <p class="mt-2 text-2xl font-semibold">Farms, zones, crops, sensors, and people in sync.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    @if (SignInManager.IsSignedIn(User))
+    {
+        <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <div class="card p-6">
+                <div class="flex items-center gap-3">
+                    <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
+                        <i data-lucide="land-plot" class="h-5 w-5"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-semibold">Farms</h2>
+                        <p class="text-sm text-slate-500">Create and manage your farm footprint.</p>
+                    </div>
+                </div>
+                <a asp-controller="Farms" asp-action="Create" class="mt-5 inline-flex items-center gap-2 rounded-full bg-brand-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-700">Create farm</a>
+            </div>
+
+            <div class="card p-6">
+                <div class="flex items-center gap-3">
+                    <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-50 text-sky-600 dark:bg-sky-500/10 dark:text-sky-400">
+                        <i data-lucide="leaf" class="h-5 w-5"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-semibold">Crop plans</h2>
+                        <p class="text-sm text-slate-500">Plan growth stages and field requirements.</p>
+                    </div>
+                </div>
+                <a asp-controller="CropPlans" asp-action="Create" class="mt-5 inline-flex items-center gap-2 rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800 dark:bg-slate-700 dark:hover:bg-slate-600">Create crop plan</a>
+            </div>
+
+            <div class="card p-6">
+                <div class="flex items-center gap-3">
+                    <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-violet-50 text-violet-600 dark:bg-violet-500/10 dark:text-violet-400">
+                        <i data-lucide="cpu" class="h-5 w-5"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-semibold">Sensors</h2>
+                        <p class="text-sm text-slate-500">Review live readings and field conditions.</p>
+                    </div>
+                </div>
+                <a asp-controller="SensorReadings" asp-action="Index" class="mt-5 inline-flex items-center gap-2 rounded-full bg-violet-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-violet-700">View readings</a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="space-y-14 pb-4">
+            <section>
+                <div class="text-center">
+                    <span class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-sm font-medium text-slate-600">Built for real field teams</span>
+                    <h2 class="mt-4 text-3xl font-semibold text-slate-900">Everything an owner, engineer, and farmer each need &mdash; nothing they don't.</h2>
+                    <p class="mx-auto mt-3 max-w-2xl text-slate-600">ZoneSync gives every role on the farm exactly the view they need: owners see the whole operation, engineers manage the zones they're responsible for, and farmers see just their tasks and alerts.</p>
+                </div>
+
+                <div class="mt-8 grid gap-4 md:grid-cols-3">
+                    <div class="card p-6">
+                        <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600">
+                            <i data-lucide="radio" class="h-5 w-5"></i>
+                        </div>
+                        <h3 class="mt-4 text-lg font-semibold">Live sensor monitoring</h3>
+                        <p class="mt-1 text-sm text-slate-500">Soil moisture, temperature, and humidity readings flow in automatically and get checked against what each crop stage actually needs.</p>
+                    </div>
+                    <div class="card p-6">
+                        <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-50 text-sky-600">
+                            <i data-lucide="bell-ring" class="h-5 w-5"></i>
+                        </div>
+                        <h3 class="mt-4 text-lg font-semibold">Alerts that turn into action</h3>
+                        <p class="mt-1 text-sm text-slate-500">Out-of-range readings, missing hardware, or faulty sensors raise an alert your team can confirm and convert straight into a task.</p>
+                    </div>
+                    <div class="card p-6">
+                        <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-violet-50 text-violet-600">
+                            <i data-lucide="users" class="h-5 w-5"></i>
+                        </div>
+                        <h3 class="mt-4 text-lg font-semibold">Role-based team access</h3>
+                        <p class="mt-1 text-sm text-slate-500">Invite engineers and farmers by email or SMS, assign a supervisor per zone, and each person only sees what's relevant to them.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <div class="text-center">
+                    <h2 class="text-2xl font-semibold text-slate-900">How it works</h2>
+                    <p class="mx-auto mt-2 max-w-2xl text-slate-600">From an empty account to live field data in six steps.</p>
+                </div>
+                <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    <div class="card p-5">
+                        <span class="text-sm font-semibold text-brand-600">1. Register</span>
+                        <p class="mt-1 text-sm text-slate-500">Create your owner account to get started.</p>
+                    </div>
+                    <div class="card p-5">
+                        <span class="text-sm font-semibold text-brand-600">2. Create a farm</span>
+                        <p class="mt-1 text-sm text-slate-500">Set its location, soil type, and total area.</p>
+                    </div>
+                    <div class="card p-5">
+                        <span class="text-sm font-semibold text-brand-600">3. Invite your team</span>
+                        <p class="mt-1 text-sm text-slate-500">Bring in engineers and farmers, and assign a supervisor.</p>
+                    </div>
+                    <div class="card p-5">
+                        <span class="text-sm font-semibold text-brand-600">4. Divide into zones</span>
+                        <p class="mt-1 text-sm text-slate-500">Split the farm into zones and assign each one to your team.</p>
+                    </div>
+                    <div class="card p-5">
+                        <span class="text-sm font-semibold text-brand-600">5. Plan the crop</span>
+                        <p class="mt-1 text-sm text-slate-500">Set a crop plan per zone once it's ready for planting.</p>
+                    </div>
+                    <div class="card p-5">
+                        <span class="text-sm font-semibold text-brand-600">6. Mount sensors</span>
+                        <p class="mt-1 text-sm text-slate-500">Install the recommended sensors and start tracking readings.</p>
+                    </div>
+                </div>
+            </section>
+
+            <div class="rounded-[2rem] border border-slate-200/80 bg-white/80 p-8 text-center shadow-soft backdrop-blur">
+                <h2 class="text-2xl font-semibold text-slate-900">Start managing your farm with confidence.</h2>
+                <p class="mx-auto mt-3 max-w-2xl text-slate-600">Register as a farm owner or sign in to open the dashboard and start organizing operations.</p>
+                <div class="mt-6 flex flex-wrap justify-center gap-3">
+                    <a asp-controller="Account" asp-action="RegisterOwner" class="inline-flex items-center gap-2 rounded-full bg-brand-600 px-5 py-3 font-semibold text-white transition hover:bg-brand-700">Register</a>
+                    <a asp-controller="Account" asp-action="Login" class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-5 py-3 font-semibold text-slate-700 transition hover:border-brand-500 hover:text-brand-600">Login</a>
+                </div>
+            </div>
+        </div>
+    }
 </div>
-
-@if (SignInManager.IsSignedIn(User))
-{
-    <div class="row mb-4">
-        <div class="col-md-4">
-            <div class="card text-center h-100">
-                <div class="card-body">
-                    <h5 class="card-title"><i class="bi bi-house-door"></i> Farms</h5>
-                    <p class="card-text text-muted">Create and manage your farms</p>
-                    <a asp-controller="Farms" asp-action="Create" class="btn btn-primary">Create Farm</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card text-center h-100">
-                <div class="card-body">
-                    <h5 class="card-title"><i class="bi bi-grid-3x3"></i> Crop Plans</h5>
-                    <p class="card-text text-muted">Plan and track your crops</p>
-                    <a asp-controller="CropPlans" asp-action="Create" class="btn btn-success">Create Crop Plan</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card text-center h-100">
-                <div class="card-body">
-                    <h5 class="card-title"><i class="bi bi-cpu"></i> Sensors</h5>
-                    <p class="card-text text-muted">Configure sensors and view readings</p>
-                    <a asp-controller="SensorReadings" asp-action="Index" class="btn btn-info text-white">View Readings</a>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="col-md-6">
-            <div class="card text-center h-100">
-                <div class="card-body">
-                    <h5 class="card-title"><i class="bi bi-exclamation-triangle"></i> Alerts</h5>
-                    <p class="card-text text-muted">Monitor and respond to alerts</p>
-                    <p class="text-muted small">Navigate to a zone to view its alerts</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="card text-center h-100">
-                <div class="card-body">
-                    <h5 class="card-title"><i class="bi bi-checklist"></i> Tasks</h5>
-                    <p class="card-text text-muted">Manage tasks and action logs</p>
-                    <p class="text-muted small">Navigate to a zone to view its tasks</p>
-                </div>
-            </div>
-        </div>
-    </div>
-}
-else
-{
-    <div class="text-center">
-        <p class="lead">Get started by registering as a farm owner or logging in.</p>
-        <div class="mt-4">
-            <a asp-controller="Account" asp-action="RegisterOwner" class="btn btn-primary btn-lg mx-2">Register</a>
-            <a asp-controller="Account" asp-action="Login" class="btn btn-outline-primary btn-lg mx-2">Login</a>
-        </div>
-    </div>
-}

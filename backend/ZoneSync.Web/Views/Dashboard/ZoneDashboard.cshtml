@@ -3,299 +3,325 @@
     ViewData["Title"] = $"{Model.ZoneName} - Dashboard";
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1>@Model.ZoneName Dashboard</h1>
-    <div>
-        <a asp-controller="Dashboard" asp-action="FarmDashboard" asp-route-farmId="@Model.FarmId" class="btn btn-outline-primary">Farm Dashboard</a>
-        <a asp-controller="Zones" asp-action="Details" asp-route-id="@Model.ZoneId" class="btn btn-outline-secondary">Zone Details</a>
-    </div>
-</div>
+<section class="panel-card">
+    <div class="d-flex flex-column flex-lg-row justify-content-between gap-3">
+        <div>
+            <span class="status-pill status-pill--info">Zone operations</span>
+            <h1 class="panel-title mt-3">@Model.ZoneName dashboard</h1>
+            <p class="panel-subtitle">Monitor crop performance, sensor health, and field actions from one elegant
+                workspace.</p>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <a asp-controller="Dashboard" asp-action="FarmDashboard" asp-route-farmId="@Model.FarmId"
+                   class="btn btn-outline-primary">Farm dashboard</a>
+                <a asp-controller="Zones" asp-action="Details" asp-route-id="@Model.ZoneId" class="btn btn-primary">Zone
+                    details</a>
+                </div>
+            </div>
+        </section>
 
-<div class="row mb-2">
-    <div class="col-md-3">
-        <div class="card text-white bg-info mb-3">
-            <div class="card-body">
-                <h5 class="card-title">@Model.ZoneArea.ToString("N2")</h5>
-                <p class="card-text">Area</p>
+        <section class="stat-grid">
+            <div class="stat-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="label">Area</div>
+                        <div class="value">@Model.ZoneArea.ToString("N2") ha</div>
+                    </div>
+                    <div class="icon"><i data-lucide="ruler"></i></div>
+                </div>
             </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card text-white @(Model.ZoneStatus == "Planted" ? "bg-success" : Model.ZoneStatus == "Available" ? "bg-primary" : "bg-secondary") mb-3">
-            <div class="card-body">
-                <h5 class="card-title">@Model.ZoneStatus</h5>
-                <p class="card-text">Status</p>
+            <div class="stat-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="label">Status</div>
+                        <div class="value">@Model.ZoneStatus</div>
+                    </div>
+                    <div class="icon"><i data-lucide="activity"></i></div>
+                </div>
             </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card text-white bg-warning mb-3">
-            <div class="card-body">
-                <h5 class="card-title">@Model.OpenAlerts.Count</h5>
-                <p class="card-text">Open Alerts</p>
+            <div class="stat-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="label">Open alerts</div>
+                        <div class="value">@Model.OpenAlerts.Count</div>
+                    </div>
+                    <div class="icon"><i data-lucide="bell-ring"></i></div>
+                </div>
             </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card text-white bg-danger mb-3">
-            <div class="card-body">
-                <h5 class="card-title">@Model.OpenTasks.Count</h5>
-                <p class="card-text">Open Tasks</p>
+            <div class="stat-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="label">Open tasks</div>
+                        <div class="value">@Model.OpenTasks.Count</div>
+                    </div>
+                    <div class="icon"><i data-lucide="list-checks"></i></div>
+                </div>
             </div>
-        </div>
-    </div>
-</div>
+        </section>
 
-<div class="row mb-4">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <h5>Zone Information</h5>
+        <section class="row g-4">
+            <div class="col-lg-7">
+                <div class="panel-card">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h2 class="panel-title">Zone overview</h2>
+                            <p class="panel-subtitle">Operational context for the selected field.</p>
+                        </div>
+                        <span class="status-pill status-pill--live">Active</span>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <div class="stat-card">
+                                <div class="label">Farm</div>
+                                <div class="value">@Model.FarmName</div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="stat-card">
+                                <div class="label">Supervisor</div>
+                                <div class="value">@(Model.SupervisorName ?? "Not assigned")</div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="stat-card">
+                                <div class="label">Assigned users</div>
+                                <div class="value">@Model.AssignedUsersCount</div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="stat-card">
+                                <div class="label">Sensor coverage</div>
+                                <div class="value">@Model.SensorStatuses.Count</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="card-body">
-                <dl class="row mb-0">
-                    <dt class="col-sm-4">Farm</dt>
-                    <dd class="col-sm-8">@Model.FarmName</dd>
-                    <dt class="col-sm-4">Supervisor</dt>
-                    <dd class="col-sm-8">@(Model.SupervisorName ?? "Not assigned")</dd>
-                    <dt class="col-sm-4">Assigned Users</dt>
-                    <dd class="col-sm-8">@Model.AssignedUsersCount</dd>
-                </dl>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <h5>Current Crop Plan</h5>
-            </div>
-            <div class="card-body">
-                @if (Model.CurrentCropPlan != null)
-                {
-                    <dl class="row mb-0">
-                        <dt class="col-sm-4">Crop</dt>
-                        <dd class="col-sm-8">@Model.CurrentCropPlan.CropName</dd>
-                        <dt class="col-sm-4">Planted</dt>
-                        <dd class="col-sm-8">@Model.CurrentCropPlan.PlantingDate.ToString("d")</dd>
-                        <dt class="col-sm-4">Harvest</dt>
-                        <dd class="col-sm-8">
-                            @Model.CurrentCropPlan.PredictedHarvestTime.ToString("d")
-                            @if (Model.CurrentCropPlan.ActualHarvestTime.HasValue)
-                            {
-                                <span class="text-muted">(Actual: @Model.CurrentCropPlan.ActualHarvestTime.Value.ToString("d"))</span>
-                            }
-                        </dd>
-                        <dt class="col-sm-4">Stage</dt>
-                        <dd class="col-sm-8">
-                            @Model.CurrentCropPlan.CurrentStageName
-                            <span class="badge bg-info">@Model.CurrentCropPlan.CurrentStageStatus</span>
-                            <span class="text-muted">(@Model.CurrentCropPlan.CurrentStageOrder of @Model.CurrentCropPlan.TotalStages)</span>
-                        </dd>
-                        @if (Model.CurrentCropPlan.StagePredictedEndDate.HasValue)
-                        {
-                            <dt class="col-sm-4">Stage Ends</dt>
-                            <dd class="col-sm-8">@Model.CurrentCropPlan.StagePredictedEndDate.Value.ToString("d")</dd>
+            <div class="col-lg-5">
+                <div class="panel-card">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h2 class="panel-title">Current crop plan</h2>
+                            <p class="panel-subtitle">Growth timeline and expected harvest.</p>
+                        </div>
+                    </div>
+                    @if (Model.CurrentCropPlan != null)
+                    {
+                        <div class="timeline">
+                            <div class="timeline-item">
+                                <span class="timeline-dot"></span>
+                                <div>
+                                    <strong>@Model.CurrentCropPlan.CropName</strong>
+                                    <div class="panel-subtitle">Planted on @Model.CurrentCropPlan.PlantingDate.ToString("d")</div>
+                                </div>
+                            </div>
+                            <div class="timeline-item">
+                                <span class="timeline-dot"></span>
+                                <div>
+                                    <strong>@Model.CurrentCropPlan.CurrentStageName</strong>
+                                    <div class="panel-subtitle">Stage @Model.CurrentCropPlan.CurrentStageOrder of
+                                        @Model.CurrentCropPlan.TotalStages • @Model.CurrentCropPlan.CurrentStageStatus</div>
+                                    </div>
+                                </div>
+                                <div class="timeline-item">
+                                    <span class="timeline-dot"></span>
+                                    <div>
+                                        <strong>Expected harvest</strong>
+                                        <div class="panel-subtitle">@Model.CurrentCropPlan.PredictedHarvestTime.ToString("d")</div>
+                                    </div>
+                                </div>
+                            </div>
                         }
-                    </dl>
-                }
-                else
-                {
-                    <p class="text-muted mb-0">No active crop plan</p>
-                }
-            </div>
-        </div>
-    </div>
-</div>
-
-@if (Model.StageReadings.Any())
-{
-    <div class="row mb-4">
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-header">
-                    <h5>Stage Requirements & Readings</h5>
+            else
+                        {
+                            <div class="empty-state">No active crop plan for this zone yet.</div>
+                        }
+                    </div>
                 </div>
-                <div class="card-body">
-                    <table class="table table-sm mb-0">
-                        <thead>
-                            <tr>
-                                <th>Requirement</th>
-                                <th>Min</th>
-                                <th>Max</th>
-                                <th>Unit</th>
-                                <th>Latest Reading</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var item in Model.StageReadings)
-                            {
-                                <tr>
-                                    <td>@item.RequirementName</td>
-                                    <td>@item.MinValue.ToString("N2")</td>
-                                    <td>@item.MaxValue.ToString("N2")</td>
-                                    <td>@item.Unit</td>
-                                    <td>@(item.LatestReadingValue?.ToString("N2") ?? "No data")</td>
-                                    <td>
-                                        @if (item.IsSatisfied.HasValue)
+            </section>
+
+            <section class="row g-4">
+                <div class="col-xl-8">
+                    <div class="panel-card">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <h2 class="panel-title">Stage requirements & readings</h2>
+                                <p class="panel-subtitle">Environmental thresholds tracked for this phase.</p>
+                            </div>
+                        </div>
+                        @if (Model.StageReadings.Any())
+                        {
+                            <div class="table-shell">
+                                <table class="table mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Requirement</th>
+                                            <th>Min</th>
+                                            <th>Max</th>
+                                            <th>Latest</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var item in Model.StageReadings)
                                         {
-                                            if (item.IsSatisfied.Value)
-                                            {
-                                                <span class="badge bg-success">Satisfied</span>
-                                            }
-                                            else
-                                            {
-                                                <span class="badge bg-danger">Not Satisfied</span>
-                                            }
+                                            <tr>
+                                                <td>@item.RequirementName</td>
+                                                <td>@item.MinValue.ToString("N2")</td>
+                                                <td>@item.MaxValue.ToString("N2")</td>
+                                                <td>@(item.LatestReadingValue?.ToString("N2") ?? "No data")</td>
+                                                <td>
+                                                    @if (item.IsSatisfied.HasValue)
+                                                    {
+                                                        if (item.IsSatisfied.Value)
+                                                        {
+                                                            <span class="status-pill status-pill--info">Satisfied</span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="status-pill status-pill--danger">Alert</span>
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="status-pill status-pill--warning">Pending</span>
+                                                    }
+                                                </td>
+                                            </tr>
                                         }
-                                        else
-                                        {
-                                            <span class="badge bg-secondary">Not Checked</span>
-                                        }
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="empty-state">No requirement records are available for this crop stage yet.</div>
+                        }
+                    </div>
                 </div>
-            </div>
-        </div>
-    </div>
-}
+                <div class="col-xl-4">
+                    <div class="panel-card">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <h2 class="panel-title">Sensor health</h2>
+                                <p class="panel-subtitle">Current coverage in the zone.</p>
+                            </div>
+                        </div>
+                        @if (Model.SensorStatuses.Any())
+                        {
+                            <div class="d-flex flex-column gap-3">
+                                @foreach (var sensor in Model.SensorStatuses)
+                                {
+                                    <div class="stat-card">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <div class="label">@sensor.ModelName</div>
+                                                <div class="value">@sensor.SerialNumber</div>
+                                            </div>
+                                            <span
+                                            class="status-pill @(sensor.Status == "Configured" ? "status-pill--info" : sensor.Status == "Maintenance" ? "status-pill--warning" : sensor.Status == "Available" ? "status-pill--warning" : "status-pill--danger")">@sensor.Status</span>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="empty-state">No sensors configured in this zone.</div>
+                        }
+                    </div>
+                </div>
+            </section>
 
-<div class="row mb-4">
-    <div class="col-md-12">
-        <div class="card">
-            <div class="card-header">
-                <h5>Sensors in Zone</h5>
-            </div>
-            <div class="card-body">
-                @if (Model.SensorStatuses.Any())
-                {
-                    <table class="table table-sm mb-0">
-                        <thead>
-                            <tr>
-                                <th>Serial</th>
-                                <th>Model</th>
-                                <th>Status</th>
-                                <th>Last Reading</th>
-                                <th>Value</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var sensor in Model.SensorStatuses)
-                            {
-                                <tr>
-                                    <td>@sensor.SerialNumber</td>
-                                    <td>@sensor.ModelName</td>
-                                    <td>
-                                        <span class="badge @(sensor.Status == "Available" ? "bg-secondary" : sensor.Status == "Configured" ? "bg-success" : sensor.Status == "Maintenance" ? "bg-warning" : "bg-danger")">
-                                            @sensor.Status
-                                        </span>
-                                    </td>
-                                    <td>@(sensor.LastReadingDate?.ToString("g") ?? "No data")</td>
-                                    <td>@(sensor.LastReadingValue?.ToString("N2") ?? "-") @sensor.LastReadingType</td>
-                                </tr>
+            <section class="row g-4">
+                <div class="col-xl-6">
+                    <div class="panel-card">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <h2 class="panel-title">Open alerts</h2>
+                                <p class="panel-subtitle">Critical issues requiring follow-up.</p>
+                            </div>
+                            <a asp-controller="Alerts" asp-action="Create" asp-route-zoneId="@Model.ZoneId"
+                               class="btn btn-sm btn-warning">Create alert</a>
+                        </div>
+                        @if (Model.OpenAlerts.Any())
+                        {
+                            <div class="table-shell">
+                                <table class="table mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Type</th>
+                                            <th>Severity</th>
+                                            <th>Date</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var alert in Model.OpenAlerts)
+                                        {
+                                            <tr>
+                                                <td>@alert.AlertType</td>
+                                                <td><span
+                                                    class="status-pill @(alert.AlertSeverity == "Critical" ? "status-pill--danger" : alert.AlertSeverity == "High" ? "status-pill--warning" : alert.AlertSeverity == "Medium" ? "status-pill--info" : "status-pill--warning")">@alert.AlertSeverity</span>
+                                                </td>
+                                                <td>@alert.FiringDate.ToString("g")</td>
+                                                <td><a asp-controller="Alerts" asp-action="Details" asp-route-id="@alert.AlertId"
+                                                           class="btn btn-sm btn-outline-primary">View</a></td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
                             }
-                        </tbody>
-                    </table>
-                }
-                else
-                {
-                    <p class="text-muted mb-0">No sensors configured in this zone</p>
-                }
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="row">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5>Open Alerts</h5>
-                <a asp-controller="Alerts" asp-action="Create" asp-route-zoneId="@Model.ZoneId" class="btn btn-sm btn-warning">Create Alert</a>
-            </div>
-            <div class="card-body">
-                @if (Model.OpenAlerts.Any())
-                {
-                    <table class="table table-sm mb-0">
-                        <thead>
-                            <tr>
-                                <th>Type</th>
-                                <th>Severity</th>
-                                <th>Date</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var alert in Model.OpenAlerts)
+            else
                             {
-                                <tr>
-                                    <td>@alert.AlertType</td>
-                                    <td>
-                                        <span class="badge @(alert.AlertSeverity == "Critical" ? "bg-danger" : alert.AlertSeverity == "High" ? "bg-warning" : alert.AlertSeverity == "Medium" ? "bg-info" : "bg-secondary")">
-                                            @alert.AlertSeverity
-                                        </span>
-                                    </td>
-                                    <td>@alert.FiringDate.ToString("g")</td>
-                                    <td>
-                                        <a asp-controller="Alerts" asp-action="Details" asp-route-id="@alert.AlertId" class="btn btn-sm btn-outline-info">View</a>
-                                    </td>
-                                </tr>
+                                <div class="empty-state">No open alerts for this zone right now.</div>
                             }
-                        </tbody>
-                    </table>
-                }
-                else
-                {
-                    <p class="text-muted mb-0">No open alerts</p>
-                }
-            </div>
-        </div>
-    </div>
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5>Open Tasks</h5>
-                <a asp-controller="Tasks" asp-action="CreateManual" asp-route-zoneId="@Model.ZoneId" class="btn btn-sm btn-primary">Create Task</a>
-            </div>
-            <div class="card-body">
-                @if (Model.OpenTasks.Any())
-                {
-                    <table class="table table-sm mb-0">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Priority</th>
-                                <th>Due</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var task in Model.OpenTasks)
+                        </div>
+                    </div>
+                    <div class="col-xl-6">
+                        <div class="panel-card">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div>
+                                    <h2 class="panel-title">Open tasks</h2>
+                                    <p class="panel-subtitle">Maintenance and field actions in motion.</p>
+                                </div>
+                                <a asp-controller="Tasks" asp-action="CreateManual" asp-route-zoneId="@Model.ZoneId"
+                                   class="btn btn-sm btn-primary">Create task</a>
+                            </div>
+                            @if (Model.OpenTasks.Any())
                             {
-                                <tr>
-                                    <td>@task.TaskName</td>
-                                    <td>
-                                        <span class="badge @(task.TaskPriority == "High" ? "bg-danger" : task.TaskPriority == "Medium" ? "bg-warning" : "bg-info")">
-                                            @task.TaskPriority
-                                        </span>
-                                    </td>
-                                    <td>@task.DueDate.ToString("d")</td>
-                                    <td>
-                                        <a asp-controller="Tasks" asp-action="Details" asp-route-id="@task.TaskId" class="btn btn-sm btn-outline-info">View</a>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                }
-                else
-                {
-                    <p class="text-muted mb-0">No open tasks</p>
-                }
-            </div>
-        </div>
-    </div>
-</div>
+                                <div class="table-shell">
+                                    <table class="table mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Name</th>
+                                                <th>Priority</th>
+                                                <th>Due</th>
+                                                <th></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var task in Model.OpenTasks)
+                                            {
+                                                <tr>
+                                                    <td>@task.TaskName</td>
+                                                    <td><span
+                                                        class="status-pill @(task.TaskPriority == "High" ? "status-pill--danger" : task.TaskPriority == "Medium" ? "status-pill--warning" : "status-pill--info")">@task.TaskPriority</span>
+                                                    </td>
+                                                    <td>@task.DueDate.ToString("d")</td>
+                                                    <td><a asp-controller="Tasks" asp-action="Details" asp-route-id="@task.TaskId"
+                                                               class="btn btn-sm btn-outline-primary">View</a></td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                }
+            else
+                                {
+                                    <div class="empty-state">No open tasks for this zone at the moment.</div>
+                                }
+                            </div>
+                        </div>
+                    </section>

@@ -34,6 +34,18 @@ builder.Services.ConfigureApplicationCookie(options =>
 builder.Services.AddScoped<IIdentityService, IdentityService>();
 builder.Services.AddControllersWithViews();
 
+// Session is used to remember which Farm the signed-in user is currently
+// viewing (the "active farm"), so the sidebar, dashboard, and every other
+// module can filter their data by it once they read Session["ActiveFarmId"].
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromHours(8);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+builder.Services.AddHttpContextAccessor();
+
 builder.Services.AddScoped<IFarmZoneService, FarmZoneService>();
 builder.Services.AddScoped<ICropPlanService, CropPlanService>();
 builder.Services.AddScoped<ISensorService, SensorService>();
@@ -51,6 +63,8 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseRouting();
+
+app.UseSession();
 
 app.UseAuthentication();
 app.UseAuthorization();

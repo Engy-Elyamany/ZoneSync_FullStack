@@ -436,173 +436,25 @@ body {
     }
 }
 
-/* ---------------------------------------------------------------- theme toggle icon swap
-   Bootstrap has no `dark:` variant like Tailwind did, so both icons are
-   in the DOM and CSS decides which one is visible based on html.dark. */
-
-.theme-icon-light { display: none; }
-html.dark .theme-icon-light { display: inline-block; }
-html.dark .theme-icon-dark { display: none; }
-
-/* ---------------------------------------------------------------- sidebar top / collapse */
-
-.sidebar-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    padding: 8px 10px 14px;
-}
-
-    .sidebar-top .brand {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        font-weight: 700;
-        font-size: 1.1rem;
-        color: #F1F6F3;
-        text-decoration: none !important;
-    }
-
-    .sidebar-top .brand-mark {
-        width: 34px;
-        height: 34px;
-        border-radius: 10px;
-        background: linear-gradient(135deg, var(--status-success), var(--accent-500));
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #fff;
-        flex-shrink: 0;
-    }
-
-    .sidebar-fold-btn {
-        background: transparent;
-        border: 1px solid var(--sidebar-border);
-        color: var(--sidebar-text-muted);
-        width: 30px;
-        height: 30px;
-    }
-
-        .sidebar-fold-btn:hover {
-            background: rgba(255,255,255,0.08);
-            color: #fff;
-        }
-
-/* Collapsed state: icon-only rail. Toggled by JS adding .sidebar-collapsed to <html>. */
-html.sidebar-collapsed .sidebar {
-    width: 76px;
-}
-
-html.sidebar-collapsed .sidebar .brand-text,
-html.sidebar-collapsed .sidebar .sidebar-group-label,
-html.sidebar-collapsed .sidebar .nav-link span,
-html.sidebar-collapsed .sidebar .farm-switcher-label,
-html.sidebar-collapsed .sidebar .status-pill span,
-html.sidebar-collapsed .sidebar .farm-switcher i.bi-chevron-expand {
-    display: none;
-}
-
-html.sidebar-collapsed .sidebar-nav .nav-link {
-    justify-content: center;
-}
-
-html.sidebar-collapsed .farm-switcher-btn {
-    justify-content: center;
-}
-
-/* ---------------------------------------------------------------- farm switcher */
-
-.farm-switcher {
-    margin: 0 4px 14px;
-}
-
-.farm-switcher-btn {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    padding: 9px 12px;
-    border-radius: 10px;
-    border: 1px solid var(--sidebar-border);
-    background: rgba(255,255,255,0.05);
-    color: var(--sidebar-text);
-    font-size: 0.85rem;
-    text-align: left;
-}
-
-    .farm-switcher-btn:hover {
-        background: rgba(255,255,255,0.09);
-    }
-
-    .farm-switcher-label {
-        display: flex;
-        flex-direction: column;
-        gap: 3px;
-        min-width: 0;
-    }
-
-        .farm-switcher-label strong {
-            font-size: 0.85rem;
-            color: #fff;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-.role-badge {
-    display: inline-block;
-    width: fit-content;
-    padding: 1px 8px;
-    border-radius: 999px;
-    font-size: 0.65rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: .03em;
-}
-
-.role-badge--owner { background: rgba(102, 187, 138, 0.2); color: #8FE3AE; }
-.role-badge--engineer { background: rgba(79, 195, 247, 0.2); color: #7FD4FA; }
-.role-badge--farmer { background: rgba(249, 168, 37, 0.2); color: #F9C859; }
-
-.dropdown-menu .role-badge--owner { background: rgba(46, 125, 50, 0.12); color: var(--status-success); }
-.dropdown-menu .role-badge--engineer { background: rgba(2, 136, 209, 0.12); color: var(--status-info); }
-.dropdown-menu .role-badge--farmer { background: rgba(249, 168, 37, 0.15); color: #8d6e00; }
-
-.farm-switcher .dropdown-menu form,
-.farm-switcher .dropdown-menu button.dropdown-item {
-    width: 100%;
-}
-
-.farm-switcher .dropdown-menu button.dropdown-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    border: none;
-    background: none;
-    text-align: left;
-}
-
 /* ---------------------------------------------------------------- responsive */
 
 @media (max-width: 960px) {
+    .app-shell {
+        flex-direction: column;
+    }
+
     .sidebar {
-        position: fixed;
-        top: 0;
-        left: 0;
-        height: 100vh;
-        z-index: 40;
-        transform: translateX(-100%);
-        transition: transform .2s ease;
-    }
-
-    .sidebar.sidebar-open-mobile {
-        transform: translateX(0);
-    }
-
-    .content-shell {
         width: 100%;
+        height: auto;
+        position: relative;
+    }
+
+    .sidebar-nav {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+
+    .sidebar-group-label {
+        padding-top: 8px;
     }
 }

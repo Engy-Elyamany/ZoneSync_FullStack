@@ -1,59 +1,28 @@
-@using Microsoft.AspNetCore.Identity
+﻿@using Microsoft.AspNetCore.Identity
 @using Microsoft.EntityFrameworkCore
 @using ZoneSync.Core.Data
 @using ZoneSync.Core.Entities.Identity
-@using ZoneSync.Core.Enums
-@using ZoneSync.Web.Controllers
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserManager<ApplicationUser> UserManager
 @inject ApplicationDbContext ApplicationDbContext
 @{
     var profileName = "Guest";
-    UserProfile? profile = null;
-    var memberships = new List<FarmMembership>();
-    var farmNamesById = new Dictionary<int, string>();
-    FarmMembership? activeMembership = null;
-    FarmRoleType? highestRole = null;
+    var profileRole = "Visitor";
 
     if (SignInManager.IsSignedIn(User))
     {
         var aspNetUserId = UserManager.GetUserId(User);
-        profile = aspNetUserId is null
+        var profile = aspNetUserId is null
             ? null
-            : await ApplicationDbContext.UserProfiles
-                .Include(u => u.FarmMemberships)
-                .FirstOrDefaultAsync(u => u.AspNetUserId == aspNetUserId);
+            : await ApplicationDbContext.UserProfiles.FirstOrDefaultAsync(u => u.AspNetUserId == aspNetUserId);
 
         if (profile is not null)
         {
             profileName = $"{profile.UserFirstName} {profile.UserLastName}".Trim();
-            memberships = profile.FarmMemberships.OrderBy(m => m.FarmId).ToList();
-
-            // No FK/navigation from FarmMembership -> Farm in the schema,
-            // so we just look the names up directly by the FarmIds we have.
-            var farmIds = memberships.Select(m => m.FarmId).ToList();
-            farmNamesById = await ApplicationDbContext.Farms
-                .Where(f => farmIds.Contains(f.FarmId))
-                .ToDictionaryAsync(f => f.FarmId, f => f.FarmName);
-
-            var activeFarmId = Context.Session.GetInt32(FarmContext.ActiveFarmSessionKey);
-            activeMembership = memberships.FirstOrDefault(m => m.FarmId == activeFarmId)
-                                ?? memberships.FirstOrDefault();
-
-            if (activeMembership is not null)
-            {
-                Context.Session.SetInt32(FarmContext.ActiveFarmSessionKey, activeMembership.FarmId);
-            }
-
-            // Sidebar visibility uses the single highest role across ALL
-            // farms the user belongs to (Owner > Engineer > Farmer) rather
-            // than the role on just the active farm — simpler, no schema
-            // change needed, at the cost of the sidebar not shrinking/growing
-            // per farm when you switch.
-            if (memberships.Count > 0)
-            {
-                highestRole = memberships.Min(m => m.RoleType);
-            }
+            profileRole = "Owner";
+            // TODO: replace with the real FarmRoleType lookup once available
+            // (Owner / Engineer / Farmer) so the sidebar below can filter
+            // sections by role instead of showing everything to everyone.
         }
         else
         {
@@ -61,209 +30,158 @@
         }
     }
 
-    bool CanSee(params FarmRoleType[] roles) => highestRole.HasValue && roles.Contains(highestRole.Value);
-    string FarmName(int farmId) => farmNamesById.TryGetValue(farmId, out var name) ? name : $"Farm #{farmId}";
-
     string CurrentController() => ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
     bool IsController(params string[] names) => names.Contains(CurrentController(), StringComparer.OrdinalIgnoreCase);
     string ActiveIf(bool condition) => condition ? "active" : "";
 }
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-full">
+
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - ZoneSync</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <script type="importmap"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f2f8f5',
+                            100: '#dfeee4',
+                            500: '#2e8b57',
+                            600: '#24764a',
+                            700: '#1f623f'
+                        }
+                    },
+                    boxShadow: {
+                        soft: '0 20px 45px -20px rgba(15, 23, 42, 0.25)'
+                    }
+                }
+            }
+        };
+    </script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/app-shell.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/ZoneSync.Web.styles.css" asp-append-version="true" />
     <script>
+        // Apply saved theme before paint
         (function () {
-            var savedTheme = localStorage.getItem('theme');
-            var dark = savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            var saved = localStorage.getItem('theme');
+            var dark = saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches);
             if (dark) document.documentElement.classList.add('dark');
-            if (localStorage.getItem('sidebarCollapsed') === 'true') {
-                document.documentElement.classList.add('sidebar-collapsed');
-            }
         })();
     </script>
 </head>
+
 <body>
     <div class="app-shell">
         <aside class="sidebar">
-            <div class="sidebar-top">
-                <a class="brand" asp-area="" asp-controller="Home" asp-action="Index">
-                    <span class="brand-mark"><i class="bi bi-flower1"></i></span>
-                    <span class="brand-text">ZoneSync</span>
-                </a>
-                <button id="sidebarToggle" class="icon-button sidebar-fold-btn" type="button" aria-label="Collapse sidebar">
-                    <i class="bi bi-layout-sidebar-inset"></i>
-                </button>
-            </div>
-
-            @if (memberships.Count > 0)
-            {
-                <div class="dropdown farm-switcher">
-                    <button class="farm-switcher-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <span class="farm-switcher-label">
-                            <strong>@(activeMembership is not null ? FarmName(activeMembership.FarmId) : "Select a farm")</strong>
-                            <span class="role-badge role-badge--@activeMembership?.RoleType.ToString().ToLowerInvariant()">@activeMembership?.RoleType</span>
-                        </span>
-                        <i class="bi bi-chevron-expand"></i>
-                    </button>
-                    <ul class="dropdown-menu">
-                        @foreach (var m in memberships)
-                        {
-                            <li>
-                                <form asp-controller="FarmContext" asp-action="Switch" method="post" class="d-inline">
-                                    <input type="hidden" name="farmId" value="@m.FarmId" />
-                                    <input type="hidden" name="returnUrl" value="@Context.Request.Path" />
-                                    <button type="submit" class="dropdown-item @(m.FarmId == activeMembership?.FarmId ? "active" : "")">
-                                        @FarmName(m.FarmId)
-                                        <span class="role-badge role-badge--@m.RoleType.ToString().ToLowerInvariant()">@m.RoleType</span>
-                                    </button>
-                                </form>
-                            </li>
-                        }
-                    </ul>
-                </div>
-            }
+            <a class="brand" asp-area="" asp-controller="Home" asp-action="Index">
+                <span class="brand-mark"><i data-lucide="sprout"></i></span>
+                <span>ZoneSync</span>
+            </a>
 
             <div class="sidebar-nav">
                 <a class="nav-link @ActiveIf(IsController("Home"))" asp-controller="Home" asp-action="Index">
-                    <i class="bi bi-speedometer2"></i><span>Dashboard</span>
+                    <i data-lucide="layout-dashboard"></i><span>Dashboard</span>
                 </a>
 
-                @if (CanSee(FarmRoleType.Owner))
-                {
-                    <div class="sidebar-group">
-                        <div class="sidebar-group-label">Farms &amp; zones</div>
-                        <a class="nav-link @ActiveIf(IsController("Farms"))" asp-controller="Farms" asp-action="Index">
-                            <i class="bi bi-building"></i><span>Farms</span>
-                        </a>
-                        <a class="nav-link @ActiveIf(IsController("Zones"))" asp-controller="Zones" asp-action="Index">
-                            <i class="bi bi-map"></i><span>Zones</span>
-                        </a>
-                    </div>
-                }
-                else if (CanSee(FarmRoleType.Engineer))
-                {
-                    <div class="sidebar-group">
-                        <div class="sidebar-group-label">Zones</div>
-                        <a class="nav-link @ActiveIf(IsController("Zones"))" asp-controller="Zones" asp-action="Index">
-                            <i class="bi bi-map"></i><span>My zones</span>
-                        </a>
-                    </div>
-                }
-                else if (CanSee(FarmRoleType.Farmer))
-                {
-                    <div class="sidebar-group">
-                        <div class="sidebar-group-label">My zone</div>
-                        <a class="nav-link @ActiveIf(IsController("Zones"))" asp-controller="Zones" asp-action="Index">
-                            <i class="bi bi-geo-alt"></i><span>My zone</span>
-                        </a>
-                    </div>
-                }
+                <div class="sidebar-group">
+                    <div class="sidebar-group-label">Farms &amp; Zones</div>
+                    <a class="nav-link @ActiveIf(IsController("Farms"))" asp-controller="Farms" asp-action="Index">
+                        <i data-lucide="building-2"></i><span>Farms</span>
+                    </a>
+                    <a class="nav-link @ActiveIf(IsController("Zones"))" asp-controller="Zones" asp-action="Index">
+                        <i data-lucide="map"></i><span>Zones</span>
+                    </a>
+                </div>
 
-                @if (CanSee(FarmRoleType.Owner, FarmRoleType.Engineer))
-                {
-                    <div class="sidebar-group">
-                        <div class="sidebar-group-label">Crops</div>
-                        <a class="nav-link @ActiveIf(IsController("Crops"))" asp-controller="Crops" asp-action="Index">
-                            <i class="bi bi-flower2"></i><span>Crops</span>
-                        </a>
-                        <a class="nav-link @ActiveIf(IsController("CropPlans"))" asp-controller="CropPlans" asp-action="Index">
-                            <i class="bi bi-clipboard-data"></i><span>Crop plans</span>
-                        </a>
-                    </div>
-                }
+                <div class="sidebar-group">
+                    <div class="sidebar-group-label">Crops</div>
+                    <a class="nav-link @ActiveIf(IsController("Crops"))" asp-controller="Crops" asp-action="Index">
+                        <i data-lucide="leaf"></i><span>Crops</span>
+                    </a>
+                    <a class="nav-link @ActiveIf(IsController("CropPlans"))" asp-controller="CropPlans" asp-action="Index">
+                        <i data-lucide="sprout"></i><span>Crop plans</span>
+                    </a>
+                </div>
 
-                @if (CanSee(FarmRoleType.Owner, FarmRoleType.Engineer))
-                {
-                    <div class="sidebar-group">
-                        <div class="sidebar-group-label">Sensors</div>
-                        <a class="nav-link @ActiveIf(IsController("SensorModels"))" asp-controller="SensorModels" asp-action="Index">
-                            <i class="bi bi-cpu"></i><span>Sensor models</span>
-                        </a>
-                        <a class="nav-link @ActiveIf(IsController("SensorInstances"))" asp-controller="SensorInstances" asp-action="Index">
-                            <i class="bi bi-hdd-network"></i><span>Sensor instances</span>
-                        </a>
-                        <a class="nav-link @ActiveIf(IsController("SensorReadings"))" asp-controller="SensorReadings" asp-action="Index">
-                            <i class="bi bi-graph-up"></i><span>Sensor readings</span>
-                        </a>
-                        @if (CanSee(FarmRoleType.Owner))
-                        {
-                            <a class="nav-link @ActiveIf(IsController("MeasurementTypes"))" asp-controller="MeasurementTypes" asp-action="Index">
-                                <i class="bi bi-rulers"></i><span>Measurement types</span>
-                            </a>
-                            <a class="nav-link @ActiveIf(IsController("ZoneConfigurations"))" asp-controller="ZoneConfigurations" asp-action="Index">
-                                <i class="bi bi-sliders"></i><span>Zone configs</span>
-                            </a>
-                        }
-                    </div>
-                }
+                <div class="sidebar-group">
+                    <div class="sidebar-group-label">Sensors</div>
+                    <a class="nav-link @ActiveIf(IsController("SensorModels"))" asp-controller="SensorModels" asp-action="Index">
+                        <i data-lucide="cpu"></i><span>Sensor models</span>
+                    </a>
+                    <a class="nav-link @ActiveIf(IsController("SensorInstances"))" asp-controller="SensorInstances" asp-action="Index">
+                        <i data-lucide="scan-search"></i><span>Sensor instances</span>
+                    </a>
+                    <a class="nav-link @ActiveIf(IsController("SensorReadings"))" asp-controller="SensorReadings" asp-action="Index">
+                        <i data-lucide="activity"></i><span>Sensor readings</span>
+                    </a>
+                    <a class="nav-link @ActiveIf(IsController("MeasurementTypes"))" asp-controller="MeasurementTypes" asp-action="Index">
+                        <i data-lucide="ruler"></i><span>Measurement types</span>
+                    </a>
+                    <a class="nav-link @ActiveIf(IsController("ZoneConfigurations"))" asp-controller="ZoneConfigurations" asp-action="Index">
+                        <i data-lucide="settings-2"></i><span>Zone configs</span>
+                    </a>
+                </div>
 
                 <div class="sidebar-group">
                     <div class="sidebar-group-label">Operations</div>
                     <a class="nav-link @ActiveIf(IsController("Alerts"))" asp-controller="Alerts" asp-action="Index">
-                        <i class="bi bi-bell"></i><span>Alerts</span>
+                        <i data-lucide="bell-ring"></i><span>Alerts</span>
                     </a>
                     <a class="nav-link @ActiveIf(IsController("Tasks"))" asp-controller="Tasks" asp-action="Index">
-                        <i class="bi bi-check2-square"></i><span>Tasks</span>
+                        <i data-lucide="list-checks"></i><span>Tasks</span>
                     </a>
                 </div>
 
-                @if (CanSee(FarmRoleType.Owner))
-                {
-                    <div class="sidebar-group">
-                        <div class="sidebar-group-label">Account</div>
-                        <a class="nav-link @ActiveIf(IsController("Users"))" asp-controller="Users" asp-action="Index">
-                            <i class="bi bi-people"></i><span>Users</span>
-                        </a>
-                        <a class="nav-link" asp-controller="Account" asp-action="Invitations">
-                            <i class="bi bi-envelope-plus"></i><span>Invitations</span>
-                        </a>
-                    </div>
-                }
+                <div class="sidebar-group">
+                    <div class="sidebar-group-label">Account</div>
+                    <a class="nav-link @ActiveIf(IsController("Users"))" asp-controller="Users" asp-action="Index">
+                        <i data-lucide="users"></i><span>Users</span>
+                    </a>
+                    <a class="nav-link" asp-controller="Account" asp-action="Invitations">
+                        <i data-lucide="mail-plus"></i><span>Invitations</span>
+                    </a>
+                    <a class="nav-link" asp-controller="Account" asp-action="AcceptInvitation">
+                        <i data-lucide="user-plus"></i><span>Accept invite</span>
+                    </a>
+                </div>
             </div>
 
             <div class="sidebar-footer">
-                <span class="status-pill status-pill--live"><i class="bi bi-broadcast"></i> Live</span>
+                <h3>Connected field network</h3>
+                <p>Every farm, zone, and sensor is monitored in real time.</p>
+                <span class="status-pill status-pill--live">Live</span>
             </div>
         </aside>
 
         <div class="content-shell">
             <header class="topbar">
-                <button id="sidebarToggleMobile" class="icon-button d-lg-none" type="button" aria-label="Open menu">
-                    <i class="bi bi-list"></i>
-                </button>
                 <div class="topbar-search">
-                    <i class="bi bi-search"></i>
+                    <i data-lucide="search"></i>
                     <input type="text" placeholder="Search farms, zones, sensors..." />
                 </div>
                 <div class="topbar-actions">
-                    <button id="themeToggle" class="icon-button" type="button" aria-label="Toggle color theme">
-                        <i class="bi bi-moon-stars theme-icon-dark"></i>
-                        <i class="bi bi-sun theme-icon-light"></i>
+                    <button class="icon-button" type="button" aria-label="Notifications">
+                        <i data-lucide="bell"></i>
                     </button>
-                    <div class="dropdown">
-                        <button class="profile-pill" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <span class="avatar">@profileName.Substring(0, Math.Min(2, profileName.Length)).ToUpperInvariant()</span>
-                            <span class="profile-pill-text">
-                                <strong>@profileName</strong>
-                                <span>@(highestRole?.ToString() ?? "Visitor")</span>
-                            </span>
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li>
-                                <form asp-controller="Account" asp-action="Logout" method="post">
-                                    <button type="submit" class="dropdown-item">
-                                        <i class="bi bi-box-arrow-right"></i> Log out
-                                    </button>
-                                </form>
-                            </li>
-                        </ul>
+                    <button id="themeToggle" class="icon-button" type="button" aria-label="Toggle color theme">
+                        <i data-lucide="moon" class="dark:hidden"></i>
+                        <i data-lucide="sun" class="hidden dark:block"></i>
+                    </button>
+                    <div class="profile-pill">
+                        <div class="avatar">@profileName.Substring(0, Math.Min(2, profileName.Length)).ToUpperInvariant()</div>
+                        <div>
+                            <strong>@profileName</strong>
+                            <span>@profileRole</span>
+                        </div>
                     </div>
                 </div>
             </header>
@@ -276,6 +194,7 @@
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script>
         const themeToggle = document.getElementById('themeToggle');
@@ -284,18 +203,9 @@
             root.classList.toggle('dark');
             localStorage.setItem('theme', root.classList.contains('dark') ? 'dark' : 'light');
         });
-
-        const sidebarToggle = document.getElementById('sidebarToggle');
-        sidebarToggle?.addEventListener('click', () => {
-            root.classList.toggle('sidebar-collapsed');
-            localStorage.setItem('sidebarCollapsed', root.classList.contains('sidebar-collapsed'));
-        });
-
-        const sidebarToggleMobile = document.getElementById('sidebarToggleMobile');
-        sidebarToggleMobile?.addEventListener('click', () => {
-            document.querySelector('.sidebar')?.classList.toggle('sidebar-open-mobile');
-        });
+        lucide.createIcons();
     </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
+
 </html>

@@ -1,12 +1,36 @@
-<!DOCTYPE html>
-<html lang="en">
+﻿<!DOCTYPE html>
+<html lang="en" class="h-full">
+
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - ZoneSync</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <script type="importmap"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f2f8f5',
+                            100: '#dfeee4',
+                            500: '#2e8b57',
+                            600: '#24764a',
+                            700: '#1f623f'
+                        }
+                    },
+                    boxShadow: {
+                        soft: '0 20px 45px -20px rgba(15, 23, 42, 0.25)'
+                    }
+                }
+            }
+        };
+    </script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/app-shell.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/ZoneSync.Web.styles.css" asp-append-version="true" />
     <script>
         (function () {
@@ -16,23 +40,24 @@
         })();
     </script>
 </head>
-<body class="public-body">
+
+<body class="min-h-full" style="background: var(--bg-app); color: var(--text);">
     <header class="public-topbar">
         <a class="public-brand" asp-controller="Home" asp-action="Index">
-            <span class="brand-mark"><i class="bi bi-flower1"></i></span>
+            <span class="brand-mark"><i data-lucide="sprout"></i></span>
             <span>ZoneSync</span>
         </a>
         <div class="public-actions">
             <button id="themeToggle" class="icon-button" type="button" aria-label="Toggle color theme">
-                <i class="bi bi-moon-stars theme-icon-dark"></i>
-                <i class="bi bi-sun theme-icon-light"></i>
+                <i data-lucide="moon" class="dark:hidden"></i>
+                <i data-lucide="sun" class="hidden dark:block"></i>
             </button>
             <a asp-controller="Account" asp-action="Login" class="btn-ghost">Login</a>
             <a asp-controller="Account" asp-action="RegisterOwner" class="btn-brand">Register</a>
         </div>
     </header>
 
-    <main class="public-main">
+    <main>
         @RenderBody()
     </main>
 
@@ -42,6 +67,7 @@
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script>
         const themeToggle = document.getElementById('themeToggle');
@@ -50,7 +76,9 @@
             root.classList.toggle('dark');
             localStorage.setItem('theme', root.classList.contains('dark') ? 'dark' : 'light');
         });
+        lucide.createIcons();
     </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
+
 </html>

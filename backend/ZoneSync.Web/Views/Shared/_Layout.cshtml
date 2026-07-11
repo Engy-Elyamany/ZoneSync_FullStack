@@ -1,211 +1,98 @@
-﻿@using Microsoft.AspNetCore.Identity
-@using Microsoft.EntityFrameworkCore
-@using ZoneSync.Core.Data
-@using ZoneSync.Core.Entities.Identity
-@inject SignInManager<ApplicationUser> SignInManager
-@inject UserManager<ApplicationUser> UserManager
-@inject ApplicationDbContext ApplicationDbContext
-@{
-    var profileName = "Guest";
-    var profileRole = "Visitor";
-
-    if (SignInManager.IsSignedIn(User))
-    {
-        var aspNetUserId = UserManager.GetUserId(User);
-        var profile = aspNetUserId is null
-            ? null
-            : await ApplicationDbContext.UserProfiles.FirstOrDefaultAsync(u => u.AspNetUserId == aspNetUserId);
-
-        if (profile is not null)
-        {
-            profileName = $"{profile.UserFirstName} {profile.UserLastName}".Trim();
-            profileRole = "Owner";
-            // TODO: replace with the real FarmRoleType lookup once available
-            // (Owner / Engineer / Farmer) so the sidebar below can filter
-            // sections by role instead of showing everything to everyone.
-        }
-        else
-        {
-            profileName = User.Identity?.Name ?? "User";
-        }
-    }
-
-    string CurrentController() => ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
-    bool IsController(params string[] names) => names.Contains(CurrentController(), StringComparer.OrdinalIgnoreCase);
-    string ActiveIf(bool condition) => condition ? "active" : "";
-}
-
-<!DOCTYPE html>
-<html lang="en" class="h-full">
-
+﻿<!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - ZoneSync</title>
     <script type="importmap"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        brand: {
-                            50: '#f2f8f5',
-                            100: '#dfeee4',
-                            500: '#2e8b57',
-                            600: '#24764a',
-                            700: '#1f623f'
-                        }
-                    },
-                    boxShadow: {
-                        soft: '0 20px 45px -20px rgba(15, 23, 42, 0.25)'
-                    }
-                }
-            }
-        };
-    </script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/app-shell.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/ZoneSync.Web.styles.css" asp-append-version="true" />
-    <script>
-        // Apply saved theme before paint
-        (function () {
-            var saved = localStorage.getItem('theme');
-            var dark = saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches);
-            if (dark) document.documentElement.classList.add('dark');
-        })();
-    </script>
 </head>
-
 <body>
-    <div class="app-shell">
-        <aside class="sidebar">
-            <a class="brand" asp-area="" asp-controller="Home" asp-action="Index">
-                <span class="brand-mark"><i data-lucide="sprout"></i></span>
-                <span>ZoneSync</span>
-            </a>
-
-            <div class="sidebar-nav">
-                <a class="nav-link @ActiveIf(IsController("Home"))" asp-controller="Home" asp-action="Index">
-                    <i data-lucide="layout-dashboard"></i><span>Dashboard</span>
-                </a>
-
-                <div class="sidebar-group">
-                    <div class="sidebar-group-label">Farms &amp; Zones</div>
-                    <a class="nav-link @ActiveIf(IsController("Farms"))" asp-controller="Farms" asp-action="Index">
-                        <i data-lucide="building-2"></i><span>Farms</span>
-                    </a>
-                    <a class="nav-link @ActiveIf(IsController("Zones"))" asp-controller="Zones" asp-action="Index">
-                        <i data-lucide="map"></i><span>Zones</span>
-                    </a>
-                </div>
-
-                <div class="sidebar-group">
-                    <div class="sidebar-group-label">Crops</div>
-                    <a class="nav-link @ActiveIf(IsController("Crops"))" asp-controller="Crops" asp-action="Index">
-                        <i data-lucide="leaf"></i><span>Crops</span>
-                    </a>
-                    <a class="nav-link @ActiveIf(IsController("CropPlans"))" asp-controller="CropPlans" asp-action="Index">
-                        <i data-lucide="sprout"></i><span>Crop plans</span>
-                    </a>
-                </div>
-
-                <div class="sidebar-group">
-                    <div class="sidebar-group-label">Sensors</div>
-                    <a class="nav-link @ActiveIf(IsController("SensorModels"))" asp-controller="SensorModels" asp-action="Index">
-                        <i data-lucide="cpu"></i><span>Sensor models</span>
-                    </a>
-                    <a class="nav-link @ActiveIf(IsController("SensorInstances"))" asp-controller="SensorInstances" asp-action="Index">
-                        <i data-lucide="scan-search"></i><span>Sensor instances</span>
-                    </a>
-                    <a class="nav-link @ActiveIf(IsController("SensorReadings"))" asp-controller="SensorReadings" asp-action="Index">
-                        <i data-lucide="activity"></i><span>Sensor readings</span>
-                    </a>
-                    <a class="nav-link @ActiveIf(IsController("MeasurementTypes"))" asp-controller="MeasurementTypes" asp-action="Index">
-                        <i data-lucide="ruler"></i><span>Measurement types</span>
-                    </a>
-                    <a class="nav-link @ActiveIf(IsController("ZoneConfigurations"))" asp-controller="ZoneConfigurations" asp-action="Index">
-                        <i data-lucide="settings-2"></i><span>Zone configs</span>
-                    </a>
-                </div>
-
-                <div class="sidebar-group">
-                    <div class="sidebar-group-label">Operations</div>
-                    <a class="nav-link @ActiveIf(IsController("Alerts"))" asp-controller="Alerts" asp-action="Index">
-                        <i data-lucide="bell-ring"></i><span>Alerts</span>
-                    </a>
-                    <a class="nav-link @ActiveIf(IsController("Tasks"))" asp-controller="Tasks" asp-action="Index">
-                        <i data-lucide="list-checks"></i><span>Tasks</span>
-                    </a>
-                </div>
-
-                <div class="sidebar-group">
-                    <div class="sidebar-group-label">Account</div>
-                    <a class="nav-link @ActiveIf(IsController("Users"))" asp-controller="Users" asp-action="Index">
-                        <i data-lucide="users"></i><span>Users</span>
-                    </a>
-                    <a class="nav-link" asp-controller="Account" asp-action="Invitations">
-                        <i data-lucide="mail-plus"></i><span>Invitations</span>
-                    </a>
-                    <a class="nav-link" asp-controller="Account" asp-action="AcceptInvitation">
-                        <i data-lucide="user-plus"></i><span>Accept invite</span>
-                    </a>
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+            <div class="container-fluid">
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">ZoneSync</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav flex-grow-1">
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle text-dark" href="#" role="button" data-bs-toggle="dropdown">Farms & Zones</a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" asp-controller="Farms" asp-action="Create">Create Farm</a></li>
+                                <li><a class="dropdown-item" asp-controller="Zones" asp-action="Create" asp-route-farmId="0">Create Zone</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle text-dark" href="#" role="button" data-bs-toggle="dropdown">Crops</a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" asp-controller="Crops" asp-action="Index">Crops</a></li>
+                                <li><a class="dropdown-item" asp-controller="CropPlans" asp-action="Index">Crop Plans</a></li>
+                                <li><a class="dropdown-item" asp-controller="GrowthStages" asp-action="Create">Growth Stages</a></li>
+                                <li><a class="dropdown-item" asp-controller="StageRequirements" asp-action="Create">Stage Requirements</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle text-dark" href="#" role="button" data-bs-toggle="dropdown">Sensors</a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" asp-controller="SensorModels" asp-action="Index">Sensor Models</a></li>
+                                <li><a class="dropdown-item" asp-controller="SensorInstances" asp-action="Index">Sensor Instances</a></li>
+                                <li><a class="dropdown-item" asp-controller="ZoneConfigurations" asp-action="Index">Configurations</a></li>
+                                <li><a class="dropdown-item" asp-controller="SensorReadings" asp-action="Index">Readings</a></li>
+                                <li><a class="dropdown-item" asp-controller="MeasurementTypes" asp-action="Index">Measurement Types</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="CreateInvitation">Invite</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="AcceptInvitation">Accept Invite</a>
+                        </li>
+                    </ul>
+                    <ul class="navbar-nav">
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <li class="nav-item">
+                                <form asp-controller="Account" asp-action="Logout" method="post">
+                                    <button type="submit" class="nav-link btn btn-link text-dark">Logout</button>
+                                </form>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="RegisterOwner">Register</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Login">Login</a>
+                            </li>
+                        }
+                    </ul>
                 </div>
             </div>
-
-            <div class="sidebar-footer">
-                <h3>Connected field network</h3>
-                <p>Every farm, zone, and sensor is monitored in real time.</p>
-                <span class="status-pill status-pill--live">Live</span>
-            </div>
-        </aside>
-
-        <div class="content-shell">
-            <header class="topbar">
-                <div class="topbar-search">
-                    <i data-lucide="search"></i>
-                    <input type="text" placeholder="Search farms, zones, sensors..." />
-                </div>
-                <div class="topbar-actions">
-                    <button class="icon-button" type="button" aria-label="Notifications">
-                        <i data-lucide="bell"></i>
-                    </button>
-                    <button id="themeToggle" class="icon-button" type="button" aria-label="Toggle color theme">
-                        <i data-lucide="moon" class="dark:hidden"></i>
-                        <i data-lucide="sun" class="hidden dark:block"></i>
-                    </button>
-                    <div class="profile-pill">
-                        <div class="avatar">@profileName.Substring(0, Math.Min(2, profileName.Length)).ToUpperInvariant()</div>
-                        <div>
-                            <strong>@profileName</strong>
-                            <span>@profileRole</span>
-                        </div>
-                    </div>
-                </div>
-            </header>
-
-            <main class="page-content" role="main">
-                @RenderBody()
-            </main>
-        </div>
+        </nav>
+    </header>
+    <div class="container">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
     </div>
 
+    <footer class="border-top footer text-muted">
+        <div class="container">
+            &copy; 2026 - ZoneSync - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+        </div>
+    </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
-    <script>
-        const themeToggle = document.getElementById('themeToggle');
-        const root = document.documentElement;
-        themeToggle?.addEventListener('click', () => {
-            root.classList.toggle('dark');
-            localStorage.setItem('theme', root.classList.contains('dark') ? 'dark' : 'light');
-        });
-        lucide.createIcons();
-    </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
-
 </html>

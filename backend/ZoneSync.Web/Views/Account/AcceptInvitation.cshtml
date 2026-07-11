@@ -4,45 +4,34 @@
     ViewData["Title"] = "Accept Invitation";
 }
 
-<div class="page-content">
-    <div class="panel-card">
-        <div class="page-intro">
-            <span class="eyebrow">Collaboration</span>
-            <h1 class="panel-title">Accept Invitation</h1>
-            <p class="panel-subtitle">Finalize the invitation by entering the token and verification details provided to
-                you.</p>
-            </div>
+<h1>Accept Invitation</h1>
 
-            <form asp-action="AcceptInvitation" method="post" class="mt-4">
-                <div asp-validation-summary="ModelOnly" class="validation-summary-errors"></div>
+<form asp-action="AcceptInvitation" method="post" class="row g-3">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-                <div class="form-grid">
-                    <div class="form-field">
-                        <label asp-for="Token" class="form-label"></label>
-                        <input asp-for="Token" class="form-control" />
-                        <span asp-validation-for="Token" class="text-danger"></span>
-                    </div>
-
-                    <div class="form-field">
-                        <label asp-for="VerificationCode" class="form-label"></label>
-                        <input asp-for="VerificationCode" class="form-control" />
-                        <span asp-validation-for="VerificationCode" class="text-danger"></span>
-                    </div>
-
-                    <div class="form-field full">
-                        <label asp-for="ReceivedByUserId" class="form-label"></label>
-                        <input asp-for="ReceivedByUserId" class="form-control" />
-                        <span asp-validation-for="ReceivedByUserId" class="text-danger"></span>
-                    </div>
-                </div>
-
-                <div class="mt-4">
-                    <button type="submit" class="btn btn-primary">Accept</button>
-                </div>
-            </form>
-        </div>
+    <div class="col-md-4">
+        <label asp-for="Token" class="form-label"></label>
+        <input asp-for="Token" class="form-control" />
+        <span asp-validation-for="Token" class="text-danger"></span>
     </div>
 
-    @section Scripts {
-        <partial name="_ValidationScriptsPartial" />
-    }
+    <div class="col-md-4">
+        <label asp-for="VerificationCode" class="form-label"></label>
+        <input asp-for="VerificationCode" class="form-control" />
+        <span asp-validation-for="VerificationCode" class="text-danger"></span>
+    </div>
+
+    <div class="col-md-4">
+        <label asp-for="ReceivedByUserId" class="form-label"></label>
+        <input asp-for="ReceivedByUserId" class="form-control" />
+        <span asp-validation-for="ReceivedByUserId" class="text-danger"></span>
+    </div>
+
+    <div class="col-12">
+        <button type="submit" class="btn btn-primary">Accept</button>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
